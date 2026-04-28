@@ -136,16 +136,3 @@ rm stratos.db
 - **Authentication:** Flask-Login with password hashing
 - **ORM:** SQLAlchemy
 
-## For Production (Vercel Deployment)
-
-To deploy to Vercel with persistent Supabase database:
-
-1. Connect your Supabase account in project settings
-2. Set `POSTGRES_URL` environment variable
-3. Click Publish
-
-The app will automatically use PostgreSQL instead of SQLite.
-
----
-
-**Happy Learning!** 🚀
