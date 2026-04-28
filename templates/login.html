@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Sign In — STRATOS-DB</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#0d0f14;--card:#141720;--a:#4f8ef7;--b:#232738;--t:#e8eaf0;--m:#6b7080;--ok:#4ff7a0;--err:#f75f5f;}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--t);font-family:'DM Sans',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;}
+    body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(79,142,247,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(79,142,247,.04) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;}
+    .wrap{width:100%;max-width:420px;padding:20px;position:relative;z-index:1;}
+    .brand{text-align:center;margin-bottom:28px;}
+    .brand h1{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;letter-spacing:.1em;color:var(--a);}
+    .brand p{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--m);margin-top:4px;}
+    .box{background:var(--card);border:1px solid var(--b);border-radius:14px;padding:28px;}
+    .box h2{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;margin-bottom:22px;}
+    .field{margin-bottom:16px;}
+    label{display:block;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--m);margin-bottom:5px;}
+    input[type=text],input[type=email],input[type=password]{width:100%;background:var(--bg);border:1px solid var(--b);border-radius:7px;color:var(--t);padding:10px 13px;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .15s;}
+    input:focus{border-color:var(--a);}
+    .remember{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--m);}
+    .remember input{width:auto;}
+    .btn{width:100%;background:var(--a);color:#fff;border:none;border-radius:7px;padding:11px;font-size:14px;font-weight:500;cursor:pointer;font-family:'Syne',sans-serif;letter-spacing:.04em;margin-top:6px;transition:opacity .15s;}
+    .btn:hover{opacity:.87}
+    .flash{margin-bottom:14px;padding:10px 14px;border-radius:7px;font-size:13px;}
+    .flash-danger{background:rgba(247,95,95,.1);color:var(--err);border:1px solid rgba(247,95,95,.2);}
+    .flash-success{background:rgba(79,247,160,.1);color:var(--ok);border:1px solid rgba(79,247,160,.2);}
+    .flash-info{background:rgba(79,142,247,.1);color:var(--a);border:1px solid rgba(79,142,247,.2);}
+    .flash-warning{background:rgba(247,183,79,.1);color:#f7b74f;border:1px solid rgba(247,183,79,.2);}
+    .hint{background:rgba(79,142,247,.06);border:1px dashed rgba(79,142,247,.3);border-radius:7px;padding:11px 14px;font-size:12px;color:var(--m);margin-bottom:18px;line-height:1.7;}
+    .hint strong{color:var(--t);}
+    .foot{text-align:center;margin-top:16px;font-size:13px;color:var(--m);}
+    .foot a{color:var(--a);text-decoration:none;}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">
+    <h1>⚡ STRATOS</h1>
+    <p>Skill Tracking &amp; Automation Risk Analysis</p>
+  </div>
+  <div class="box">
+    <h2>Sign in</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}
+        <div class="flash flash-{{ cat }}">{{ msg }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    <div class="hint">
+      <strong>Demo logins:</strong><br>
+      Admin &nbsp;→ <code style="background:rgba(79,142,247,.1);padding:1px 5px;border-radius:3px;font-family:monospace;">admin</code> / <code style="background:rgba(79,142,247,.1);padding:1px 5px;border-radius:3px;font-family:monospace;">admin123</code><br>
+      Student → <code style="background:rgba(79,142,247,.1);padding:1px 5px;border-radius:3px;font-family:monospace;">student1</code> / <code style="background:rgba(79,142,247,.1);padding:1px 5px;border-radius:3px;font-family:monospace;">student123</code>
+    </div>
+
+    <form method="POST" action="{{ url_for('auth.login') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="field">
+        <label for="u">Username</label>
+        <input type="text" id="u" name="username" required autocomplete="username" placeholder="Enter username">
+      </div>
+      <div class="field">
+        <label for="p">Password</label>
+        <input type="password" id="p" name="password" required autocomplete="current-password" placeholder="••••••••">
+      </div>
+      <div class="field remember">
+        <input type="checkbox" id="rem" name="remember">
+        <label for="rem" style="text-transform:none;letter-spacing:0;margin:0;cursor:pointer;">Remember me</label>
+      </div>
+      <button type="submit" class="btn">Sign In →</button>
+    </form>
+
+    <div class="foot">No account? <a href="{{ url_for('auth.register') }}">Register here</a></div>
+  </div>
+</div>
+</body>
+</html>

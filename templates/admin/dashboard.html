@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard — STRATOS{% endblock %}
+{% block page_title %}Admin Dashboard{% endblock %}
+{% block topbar_right %}
+  <a href="{{ url_for('admin.export_csv') }}" class="btn-ghost btn-sm">↓ Export CSV</a>
+{% endblock %}
+
+{% block content %}
+<div class="grid-4 mb-3">
+  <div class="stat"><div class="lbl">Students</div><div class="val">{{ student_count }}</div></div>
+  <div class="stat"><div class="lbl">Skills</div><div class="val">{{ skill_count }}</div></div>
+  <div class="stat"><div class="lbl">Attempts</div><div class="val">{{ attempt_count }}</div></div>
+  <div class="stat"><div class="lbl">Projects</div><div class="val">{{ project_count }}</div></div>
+</div>
+
+<div class="grid-2 mb-3">
+  <div class="card">
+    <div class="card-head">⚠ High Risk Skills</div>
+    <table class="tbl">
+      <thead><tr><th>Skill</th><th>Category</th><th>Base Risk</th></tr></thead>
+      <tbody>
+        {% for skill, rp in high_risk %}
+        <tr>
+          <td><strong>{{ skill.name }}</strong></td>
+          <td class="text-muted">{{ skill.category }}</td>
+          <td>
+            <span class="badge badge-{% if rp.base_risk_score>=70%}HIGH{% elif rp.base_risk_score>=40%}MEDIUM{% else %}LOW{% endif %}">
+              {{ rp.base_risk_score }}
+            </span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-head">🏆 Top Students</div>
+    <table class="tbl">
+      <thead><tr><th>Student</th><th>Branch</th><th>Avg Depth</th><th>Skills</th></tr></thead>
+      <tbody>
+        {% for s in top_students %}
+        <tr>
+          <td><strong>{{ s.username }}</strong></td>
+          <td class="text-muted">{{ s.branch or '—' }}</td>
+          <td>{{ s.avg_depth or 0 }}%</td>
+          <td>{{ s.skill_count }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-head">Average Risk per Skill</div>
+  <div class="card-body"><canvas id="riskChart" height="80"></canvas></div>
+</div>
+
+<div class="card">
+  <div class="card-head">Recent Activity</div>
+  <table class="tbl">
+    <thead><tr><th>Student</th><th>Task</th><th>Score</th><th>When</th></tr></thead>
+    <tbody>
+      {% for attempt, user, task in recent %}
+      <tr>
+        <td><strong>{{ user.username }}</strong></td>
+        <td>{{ task.title }}</td>
+        <td>{{ attempt.score_achieved|int }}</td>
+        <td class="text-muted" style="font-size:12px;">{{ attempt.attempted_at.strftime('%d %b %H:%M') }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+fetch('/api/skill-risk-overview')
+  .then(r => r.json())
+  .then(data => {
+    if (!data.length) return;
+    const ctx = document.getElementById('riskChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: data.map(d => d.skill),
+        datasets: [{
+          label: 'Avg Risk Score',
+          data: data.map(d => d.avg_risk),
+          backgroundColor: data.map(d =>
+            d.avg_risk >= 70 ? 'rgba(247,95,95,0.7)' :
+            d.avg_risk >= 40 ? 'rgba(247,183,79,0.7)' :
+                               'rgba(79,247,160,0.7)'),
+          borderRadius: 4,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: '#6b7080', font:{size:11} }, grid: { color: 'rgba(255,255,255,0.04)' } },
+          y: { beginAtZero:true, max:100, ticks:{ color:'#6b7080' }, grid:{ color:'rgba(255,255,255,0.04)' } }
+        }
+      }
+    });
+  });
+</script>
+{% endblock %}

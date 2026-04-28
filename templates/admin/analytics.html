@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}Analytics — STRATOS{% endblock %}
+{% block page_title %}Analytics & Reports{% endblock %}
+{% block topbar_right %}
+  <a href="{{ url_for('admin.export_csv') }}" class="btn-primary btn-sm">↓ Export CSV</a>
+{% endblock %}
+
+{% block content %}
+<div class="card mb-3">
+  <div class="card-head">Student Risk Summary</div>
+  <table class="tbl">
+    <thead><tr><th>Student</th><th>Branch</th><th>Skills</th><th>Avg Depth</th><th>Avg Risk</th><th>Status</th></tr></thead>
+    <tbody>
+      {% for s in student_summary %}
+      {% set r = (s.avg_risk or 0)|float %}
+      <tr>
+        <td><strong>{{ s.username }}</strong></td>
+        <td class="text-muted">{{ s.branch or '—' }}</td>
+        <td>{{ s.skills }}</td>
+        <td>{{ s.avg_depth or 0 }}%</td>
+        <td>{{ s.avg_risk or 0 }}</td>
+        <td>
+          <span class="badge badge-{% if r>=70%}HIGH{% elif r>=40%}MEDIUM{% else %}LOW{% endif %}">
+            {% if r>=70%}CRITICAL{% elif r>=40%}WARNING{% else %}SAFE{% endif %}
+          </span>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="card mb-3">
+  <div class="card-head">High Automation Risk Skills</div>
+  <table class="tbl">
+    <thead><tr><th>Skill</th><th>Category</th><th>AI Threat</th><th>Repetitiveness</th><th>Complexity</th><th>Base Risk</th></tr></thead>
+    <tbody>
+      {% for skill, rp in high_risk_skills %}
+      <tr>
+        <td><strong>{{ skill.name }}</strong></td>
+        <td class="text-muted">{{ skill.category }}</td>
+        <td>{{ rp.ai_threat_level }}/10</td>
+        <td>{{ rp.repetitiveness }}/10</td>
+        <td>{{ rp.complexity }}/10</td>
+        <td><span class="badge badge-{% if rp.base_risk_score>=70%}HIGH{% elif rp.base_risk_score>=40%}MEDIUM{% else %}LOW{% endif %}">{{ rp.base_risk_score }}</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="card">
+  <div class="card-head">Full Skill-Student Report</div>
+  <div style="overflow-x:auto;">
+    <table class="tbl">
+      <thead><tr><th>Student</th><th>Skill</th><th>Category</th><th>Depth</th><th>Risk</th><th>Level</th></tr></thead>
+      <tbody>
+        {% for ss, user, skill in full_report %}
+        <tr>
+          <td>{{ user.username }}</td>
+          <td><strong>{{ skill.name }}</strong></td>
+          <td class="text-muted">{{ skill.category }}</td>
+          <td>{{ "%.1f"|format(ss.depth_score|float) }}%</td>
+          <td>{{ "%.1f"|format(ss.risk_score|float if ss.risk_score else 0) }}</td>
+          <td><span class="badge badge-{{ ss.risk_level }}">{{ ss.risk_level }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

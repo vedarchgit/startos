@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard — STRATOS{% endblock %}
+{% block page_title %}My Dashboard{% endblock %}
+{% block topbar_right %}
+  <a href="{{ url_for('student.view_tasks') }}" class="btn-primary btn-sm">+ Submit Attempt</a>
+{% endblock %}
+
+{% block content %}
+
+{# ── Stats row ── #}
+<div class="grid-4 mb-3">
+  <div class="stat">
+    <div class="lbl">Skills Tracked</div>
+    <div class="val">{{ my_skills|length }}</div>
+    <div class="sub">categories practiced</div>
+  </div>
+  <div class="stat">
+    <div class="lbl">Avg Depth</div>
+    <div class="val">
+      {% if my_skills %}
+        {{ "%.0f"|format(my_skills|map(attribute=0)|map(attribute='depth_score')|map('float')|list|sum / my_skills|length) }}%
+      {% else %}0%{% endif %}
+    </div>
+    <div class="sub">weighted expertise</div>
+  </div>
+  <div class="stat">
+    <div class="lbl">High Risk</div>
+    <div class="val" style="color:var(--danger)">
+      {{ my_skills|selectattr('0.risk_level','eq','HIGH')|list|length }}
+    </div>
+    <div class="sub">skills need upskilling</div>
+  </div>
+  <div class="stat">
+    <div class="lbl">Eligible Projects</div>
+    <div class="val" style="color:var(--ok)">{{ eligible_projects|length }}</div>
+    <div class="sub">you qualify now</div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start;">
+
+{# ── Skill cards ── #}
+<div>
+  <div style="font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;">Skill Risk Report</div>
+
+  {% if my_skills %}
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;">
+    {% for ss, skill in my_skills %}
+    <div class="card" style="padding:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:11px;">
+        <div>
+          <div style="font-family:var(--font-h);font-weight:700;font-size:14px;">{{ skill.name }}</div>
+          <div class="text-muted" style="font-size:11px;margin-top:2px;">{{ skill.category }}</div>
+        </div>
+        <span class="badge badge-{{ ss.risk_level }}">{{ ss.risk_level }}</span>
+      </div>
+
+      <div class="mb-2">
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);">
+          <span>Depth</span><strong style="color:var(--text)">{{ "%.1f"|format(ss.depth_score|float) }}%</strong>
+        </div>
+        <div class="bar-wrap"><div class="bar-fill bar-depth" style="width:{{ ss.depth_score|float }}%"></div></div>
+      </div>
+
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);">
+          <span>Risk Score</span>
+          <strong style="color:{% if ss.risk_level=='HIGH'%}var(--danger){% elif ss.risk_level=='MEDIUM'%}var(--warn){% else %}var(--ok){% endif %}">
+            {{ "%.1f"|format(ss.risk_score|float if ss.risk_score else 0) }} / 100
+          </strong>
+        </div>
+        <div class="bar-wrap">
+          <div class="bar-fill bar-{{ ss.risk_level|lower }}" style="width:{{ ss.risk_score|float if ss.risk_score else 0 }}%"></div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="card" style="padding:40px;text-align:center;color:var(--muted);">
+    <div style="font-size:32px;margin-bottom:10px;">📊</div>
+    <div style="margin-bottom:6px;font-size:14px;">No skills tracked yet</div>
+    <div style="font-size:12px;margin-bottom:18px;">Submit a lab task attempt to generate your risk report.</div>
+    <a href="{{ url_for('student.view_tasks') }}" class="btn-primary">Browse Lab Tasks</a>
+  </div>
+  {% endif %}
+</div>
+
+{# ── Right column ── #}
+<div style="display:flex;flex-direction:column;gap:16px;">
+
+  {# Chart #}
+  {% if my_skills %}
+  <div class="card">
+    <div class="card-head">Depth vs Risk</div>
+    <div class="card-body"><canvas id="skillChart" height="220"></canvas></div>
+  </div>
+  {% endif %}
+
+  {# Recent attempts #}
+  <div class="card">
+    <div class="card-head">Recent Attempts</div>
+    {% if recent %}
+    <table class="tbl">
+      <thead><tr><th>Task</th><th>Score</th></tr></thead>
+      <tbody>
+        {% for attempt, task, skill in recent %}
+        <tr>
+          <td>
+            <div style="font-size:13px;">{{ task.title }}</div>
+            <div class="text-muted" style="font-size:11px;">{{ skill.name }}</div>
+          </td>
+          <td><strong>{{ attempt.score_achieved|int }}</strong></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="card-body text-muted" style="font-size:13px;">No attempts yet.</div>
+    {% endif %}
+  </div>
+
+  {# Projects #}
+  <div class="card">
+    <div class="card-head">Eligible Projects</div>
+    {% if eligible_projects %}
+      {% for p in eligible_projects %}
+      <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-size:13px;font-weight:500;">{{ p.title }}</div>
+          <div class="text-muted" style="font-size:11px;">{{ p.org.name }}</div>
+          {% if p.deadline %}<div style="font-size:10px;color:var(--warn);">Due {{ p.deadline }}</div>{% endif %}
+        </div>
+        <form method="POST" action="{{ url_for('student.apply_project', project_id=p.project_id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn-primary btn-sm">Apply</button>
+        </form>
+      </div>
+      {% endfor %}
+    {% else %}
+    <div class="card-body text-muted" style="font-size:13px;">
+      Improve your skills to unlock projects.
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if my_skills %}
+<script>
+fetch('/api/my-risk')
+  .then(r => r.json())
+  .then(data => {
+    if (!data.length) return;
+    const ctx = document.getElementById('skillChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: data.map(d => d.skill),
+        datasets: [
+          { label: 'Depth %', data: data.map(d => d.depth), backgroundColor: 'rgba(79,142,247,0.7)', borderRadius: 4 },
+          { label: 'Risk',    data: data.map(d => d.risk),  backgroundColor: 'rgba(247,95,95,0.6)',  borderRadius: 4 },
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { labels: { color: '#6b7080', font: { size: 11 } } } },
+        scales: {
+          x: { ticks: { color: '#6b7080', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+          y: { beginAtZero: true, max: 100, ticks: { color: '#6b7080' }, grid: { color: 'rgba(255,255,255,0.04)' } }
+        }
+      }
+    });
+  });
+</script>
+{% endif %}
+{% endblock %}

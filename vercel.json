@@ -1,0 +1,13 @@
+{
+  "buildCommand": "pip install -r requirements.txt",
+  "framework": "flask",
+  "python": {
+    "version": "3.13"
+  },
+  "env": {
+    "POSTGRES_URL": "@postgres_url",
+    "FLASK_ENV": "production",
+    "SECRET_KEY": "@secret_key"
+  },
+  "regions": ["bom1"]
+}

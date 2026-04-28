@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block title %}Risk Report — STRATOS{% endblock %}
+{% block page_title %}My Automation Risk Report{% endblock %}
+
+{% block content %}
+<div class="card mb-3" style="padding:16px 20px;">
+  <p style="font-size:13px;color:var(--muted);line-height:1.7;margin:0;">
+    <strong style="color:var(--text)">Risk formula:</strong>
+    <code>(repetitiveness + ai_threat − complexity/2) × (1 − depth/100) × 10</code>
+    — your risk drops as your depth increases. Focus on <strong style="color:var(--text)">Hard</strong> tasks (weight ×2) for fastest improvement.
+  </p>
+</div>
+
+{% if report %}
+<div class="card">
+  <div class="card-head">Skill Breakdown</div>
+  <div style="overflow-x:auto;">
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th>Skill</th><th>Category</th>
+          <th>Depth</th><th>Risk Score</th><th>Level</th>
+          <th>AI Threat</th><th>Repetitive</th><th>Complexity</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ss, skill in report %}
+        <tr>
+          <td><strong>{{ skill.name }}</strong></td>
+          <td class="text-muted">{{ skill.category }}</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:7px;">
+              <div class="bar-wrap" style="width:55px;"><div class="bar-fill bar-depth" style="width:{{ ss.depth_score|float }}%"></div></div>
+              <span style="font-size:12px;">{{ "%.1f"|format(ss.depth_score|float) }}%</span>
+            </div>
+          </td>
+          <td>
+            <div style="display:flex;align-items:center;gap:7px;">
+              <div class="bar-wrap" style="width:55px;">
+                <div class="bar-fill bar-{{ ss.risk_level|lower }}" style="width:{{ ss.risk_score|float if ss.risk_score else 0 }}%"></div>
+              </div>
+              <span style="font-size:12px;">{{ "%.1f"|format(ss.risk_score|float if ss.risk_score else 0) }}</span>
+            </div>
+          </td>
+          <td><span class="badge badge-{{ ss.risk_level }}">{{ ss.risk_level }}</span></td>
+          <td style="text-align:center;">
+            {% if skill.risk_param %}{{ skill.risk_param.ai_threat_level }}/10{% else %}—{% endif %}
+          </td>
+          <td style="text-align:center;">
+            {% if skill.risk_param %}{{ skill.risk_param.repetitiveness }}/10{% else %}—{% endif %}
+          </td>
+          <td style="text-align:center;">
+            {% if skill.risk_param %}{{ skill.risk_param.complexity }}/10{% else %}—{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<div style="margin-top:14px;padding:13px 16px;background:rgba(79,142,247,.06);border:1px solid rgba(79,142,247,.2);border-radius:8px;font-size:13px;color:var(--muted);">
+  <strong style="color:var(--accent)">How to reduce risk:</strong>
+  Each Hard task attempt recalculates your depth score automatically.
+  Higher depth directly lowers your risk score.
+</div>
+{% else %}
+<div style="text-align:center;padding:60px;color:var(--muted);">
+  Complete lab tasks first.
+  <br><br>
+  <a href="{{ url_for('student.view_tasks') }}" class="btn-primary">Go to Tasks</a>
+</div>
+{% endif %}
+{% endblock %}

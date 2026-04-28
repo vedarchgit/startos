@@ -1,0 +1,24 @@
+# STRATOS-DB Docker Compose
+# Usage: docker-compose up --build
+# Then open: http://localhost:5000
+
+version: "3.9"
+
+services:
+  web:
+    build: .
+    container_name: stratos_web
+    restart: unless-stopped
+    environment:
+      FLASK_APP: app.py
+      FLASK_ENV: production
+      SECRET_KEY: ${SECRET_KEY:-docker-dev-secret-key}
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./stratos.db:/app/stratos.db
+      - .:/app
+    working_dir: /app
+
+volumes:
+  stratos_db:

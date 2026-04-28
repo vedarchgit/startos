@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Students — STRATOS{% endblock %}
+{% block page_title %}Student Management{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-head">All Students ({{ students|length }})</div>
+  <table class="tbl">
+    <thead><tr><th>Student</th><th>Email</th><th>Branch</th><th>Year</th><th>Skills</th><th>Attempts</th><th>Avg Depth</th><th>Avg Risk</th></tr></thead>
+    <tbody>
+      {% for row in students %}
+      {% set user = row[0] %}
+      <tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;">{{ user.username[0].upper() }}</div>
+            <strong>{{ user.username }}</strong>
+          </div>
+        </td>
+        <td class="text-muted" style="font-size:12px;">{{ user.email }}</td>
+        <td class="text-muted">{{ user.branch or '—' }}</td>
+        <td class="text-muted">{{ user.year or '—' }}</td>
+        <td>{{ row.skill_count or 0 }}</td>
+        <td>{{ row.attempt_count or 0 }}</td>
+        <td>{{ row.avg_depth or 0 }}%</td>
+        <td>
+          {% set r = (row.avg_risk or 0)|float %}
+          <span class="badge badge-{% if r>=70%}HIGH{% elif r>=40%}MEDIUM{% else %}LOW{% endif %}">{{ r }}</span>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

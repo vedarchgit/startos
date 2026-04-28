@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Register — STRATOS-DB</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#0d0f14;--card:#141720;--a:#4f8ef7;--b:#232738;--t:#e8eaf0;--m:#6b7080;--ok:#4ff7a0;--err:#f75f5f;}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--t);font-family:'DM Sans',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+    body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(79,142,247,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(79,142,247,.04) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;}
+    .wrap{width:100%;max-width:460px;position:relative;z-index:1;}
+    .brand{text-align:center;margin-bottom:24px;}
+    .brand h1{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;letter-spacing:.1em;color:var(--a);}
+    .box{background:var(--card);border:1px solid var(--b);border-radius:14px;padding:28px;}
+    .box h2{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;margin-bottom:20px;}
+    .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    .field{margin-bottom:14px;}
+    label{display:block;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--m);margin-bottom:5px;}
+    input,select{width:100%;background:var(--bg);border:1px solid var(--b);border-radius:7px;color:var(--t);padding:9px 12px;font-size:13.5px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .15s;}
+    input:focus,select:focus{border-color:var(--a);}
+    select option{background:var(--card);}
+    .btn{width:100%;background:var(--a);color:#fff;border:none;border-radius:7px;padding:11px;font-size:14px;font-weight:500;cursor:pointer;font-family:'Syne',sans-serif;margin-top:4px;transition:opacity .15s;}
+    .btn:hover{opacity:.87}
+    .flash{margin-bottom:12px;padding:9px 13px;border-radius:7px;font-size:13px;}
+    .flash-danger{background:rgba(247,95,95,.1);color:var(--err);border:1px solid rgba(247,95,95,.2);}
+    .flash-success{background:rgba(79,247,160,.1);color:var(--ok);border:1px solid rgba(79,247,160,.2);}
+    .foot{text-align:center;margin-top:16px;font-size:13px;color:var(--m);}
+    .foot a{color:var(--a);text-decoration:none;}
+    .hint{font-size:11px;color:var(--m);margin-top:4px;}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand"><h1>⚡ STRATOS</h1></div>
+  <div class="box">
+    <h2>Create Account</h2>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}
+        <div class="flash flash-{{ cat }}">{{ msg }}</div>
+      {% endfor %}
+    {% endwith %}
+    <form method="POST" action="{{ url_for('auth.register') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="field">
+        <label>Username</label>
+        <input type="text" name="username" required placeholder="e.g. john_doe" value="{{ username or '' }}">
+        <div class="hint">Min 3 characters, unique</div>
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" name="email" required placeholder="you@college.edu" value="{{ email or '' }}">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" name="password" required placeholder="Min 8 characters">
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>Branch</label>
+          <select name="branch">
+            <option value="">Select</option>
+            {% for b in ['Computer','IT','EXTC','Mechanical','Civil','Electronics'] %}
+            <option {% if branch==b %}selected{% endif %}>{{ b }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label>Year</label>
+          <select name="year">
+            <option value="">Select</option>
+            <option value="1" {% if year=='1' %}selected{% endif %}>FE (1st)</option>
+            <option value="2" {% if year=='2' %}selected{% endif %}>SE (2nd)</option>
+            <option value="3" {% if year=='3' %}selected{% endif %}>TE (3rd)</option>
+            <option value="4" {% if year=='4' %}selected{% endif %}>BE (4th)</option>
+          </select>
+        </div>
+      </div>
+      <button type="submit" class="btn">Create Account →</button>
+    </form>
+    <div class="foot">Already registered? <a href="{{ url_for('auth.login') }}">Sign in</a></div>
+  </div>
+</div>
+</body>
+</html>

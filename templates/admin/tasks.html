@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}Lab Tasks — STRATOS{% endblock %}
+{% block page_title %}Lab Tasks{% endblock %}
+
+{% block content %}
+<div class="grid-sidebar">
+  <div class="card">
+    <div class="card-head">Add Lab Task</div>
+    <div class="card-body">
+      <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="field"><label class="lbl-f">Skill</label>
+          <select name="skill_id" class="inp" required>
+            <option value="">Select skill</option>
+            {% for s in skills %}<option value="{{ s.skill_id }}">{{ s.name }}</option>{% endfor %}
+          </select></div>
+        <div class="field"><label class="lbl-f">Title</label>
+          <input name="title" class="inp" placeholder="e.g. Build a REST API" required></div>
+        <div class="field"><label class="lbl-f">Description</label>
+          <textarea name="description" class="inp" rows="3" placeholder="Task instructions..."></textarea></div>
+        <div class="field"><label class="lbl-f">Difficulty</label>
+          <select name="difficulty" class="inp" required>
+            <option value="Easy">Easy (weight ×0.5)</option>
+            <option value="Medium" selected>Medium (weight ×1.0)</option>
+            <option value="Hard">Hard (weight ×2.0)</option>
+          </select></div>
+        <button type="submit" class="btn-primary" style="width:100%;">Add Task</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">All Tasks ({{ tasks|length }})</div>
+    <table class="tbl">
+      <thead><tr><th>Title</th><th>Skill</th><th>Difficulty</th><th>Weight</th><th>Attempts</th></tr></thead>
+      <tbody>
+        {% for task, skill, attempt_count in tasks %}
+        <tr>
+          <td>
+            <div style="font-size:13px;font-weight:500;">{{ task.title }}</div>
+            {% if task.description %}<div class="text-muted" style="font-size:11px;">{{ task.description[:55] }}…</div>{% endif %}
+          </td>
+          <td class="text-muted">{{ skill.name }}</td>
+          <td><span class="diff-{{ task.difficulty }}">{{ task.difficulty }}</span></td>
+          <td>×{{ task.difficulty_weight }}</td>
+          <td>{{ attempt_count }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

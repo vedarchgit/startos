@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Lab Tasks — STRATOS{% endblock %}
+{% block page_title %}Lab Tasks{% endblock %}
+
+{% block content %}
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px;">
+  {% for task, skill in tasks %}
+  <div class="card" style="padding:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+      <div>
+        <div style="font-family:var(--font-h);font-weight:700;font-size:14px;">{{ task.title }}</div>
+        <div class="text-muted" style="font-size:11px;margin-top:2px;">{{ skill.name }} · {{ skill.category }}</div>
+      </div>
+      <span class="diff-{{ task.difficulty }}">{{ task.difficulty }}</span>
+    </div>
+
+    {% if task.description %}
+    <p class="text-muted" style="font-size:12px;margin-bottom:11px;line-height:1.5;">{{ task.description }}</p>
+    {% endif %}
+
+    <div class="text-muted" style="font-size:12px;margin-bottom:13px;">
+      Weight <strong style="color:var(--text)">×{{ task.difficulty_weight }}</strong>
+      &nbsp;·&nbsp; Max <strong style="color:var(--text)">{{ task.max_score }} pts</strong>
+    </div>
+
+    <form method="POST" action="{{ url_for('student.submit_attempt', task_id=task.task_id) }}"
+          style="display:flex;gap:7px;align-items:center;">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="number" name="score" min="0" max="{{ task.max_score }}" step="0.5"
+             placeholder="Score (0–{{ task.max_score }})"
+             class="inp" style="flex:1;padding:8px 11px;" required>
+      <button type="submit" class="btn-primary btn-sm" style="white-space:nowrap;">Submit</button>
+    </form>
+  </div>
+  {% else %}
+  <div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--muted);">
+    No tasks yet. Ask your admin to add some.
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
